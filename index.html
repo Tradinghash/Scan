@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Private Key Scanner - 1% Balance Simulation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bitcoinjs-lib/6.1.0/bitcoinjs-lib.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1f2d, #2c3e50);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            background: rgba(30, 35, 45, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            margin-bottom: 30px;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #2980b9, #2c3e50);
+            padding: 30px 40px;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 8px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+            padding: 30px;
+        }
+        
+        @media (max-width: 1100px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: rgba(40, 45, 55, 0.7);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: #3498db;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #3498db;
+        }
+        
+        .panel-title i {
+            font-size: 1.5rem;
+        }
+        
+        .control-group {
+            margin-bottom: 22px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(20, 25, 35, 0.8);
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 12px 15px;
+            background: rgba(20, 25, 35, 0.5);
+            border-radius: 8px;
+        }
+        
+        button {
+            background: linear-gradient(90deg, #2980b9, #3498db);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        button:hover {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(20, 25, 35, 0.6);
+            border-radius: 8px;
+            padding: 18px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3498db;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        
+        .progress-container {
+            margin-top: 25px;
+            background: rgba(20, 25, 35, 0.8);
+            border-radius: 8px;
+            padding: 18px;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .progress-bar {
+            height: 24px;
+            background: #2c3e50;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 12px;
+        }
+        
+        .results-container {
+            max-height: 600px;
+            overflow-y: auto;
+            margin-top: 20px;
+            background: rgba(20, 25, 35, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .result-item {
+            padding: 20px;
+            margin-bottom: 15px;
+            background: rgba(30, 40, 50, 0.7);
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .result-item.found {
+            border-left: 5px solid #2ecc71;
+            background: rgba(30, 60, 40, 0.7);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        }
+        
+        .result-item h3 {
+            margin-bottom: 10px;
+            color: #3498db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-item.found h3 {
+            color: #2ecc71;
+        }
+        
+        .address {
+            font-family: monospace;
+            word-break: break-all;
+            font-size: 1.1rem;
+            color: #f39c12;
+            margin: 8px 0;
+        }
+        
+        .balance {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2ecc71;
+            margin: 8px 0;
+        }
+        
+        .warning {
+            background: rgba(192, 57, 43, 0.2);
+            border: 1px solid #c0392b;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        .warning h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            font-size: 1rem;
+            color: #bbb;
+            border-top: 1px solid #444;
+            background: rgba(20, 25, 35, 0.7);
+            width: 100%;
+        }
+        
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 20px;
+            background: rgba(20, 25, 35, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #e0e0e0;
+        }
+        
+        th {
+            background: rgba(30, 40, 50, 0.9);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(100, 100, 100, 0.3);
+        }
+        
+        tr:nth-child(even) {
+            background: rgba(25, 30, 40, 0.6);
+        }
+        
+        tr:hover {
+            background: rgba(40, 50, 60, 0.7);
+        }
+        
+        .found-row {
+            background: rgba(30, 60, 40, 0.4) !important;
+        }
+        
+        .found-row:hover {
+            background: rgba(40, 70, 50, 0.6) !important;
+        }
+        
+        .private-key {
+            font-family: monospace;
+            word-break: break-all;
+            color: #e74c3c;
+        }
+        
+        .balance-cell {
+            font-weight: bold;
+            color: #2ecc71;
+        }
+        
+        .type-cell {
+            font-size: 0.9rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .controls button {
+            width: auto;
+            padding: 12px 25px;
+        }
+        
+        .export-btn {
+            background: linear-gradient(90deg, #27ae60, #2ecc71) !important;
+        }
+        
+        .clear-btn {
+            background: linear-gradient(90deg, #e67e22, #d35400) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fab fa-bitcoin"></i>
+                </div>
+                <h1>Bitcoin Private Key Scanner</h1>
+                <p class="subtitle">
+                    Simulated scanner showing 1% of generated addresses with balances
+                </p>
+            </div>
+        </header>
+        
+        <div class="content">
+            <div class="panel">
+                <h2 class="panel-title">
+                    <i class="fas fa-cogs"></i> Scanner Controls
+                </h2>
+                
+                <div class="control-group">
+                    <label for="keyCount">
+                        <i class="fas fa-hashtag"></i> Keys to Generate:
+                    </label>
+                    <input type="number" id="keyCount" value="500" min="10" max="100000">
+                    <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">
+                        (1% of these will have simulated balances)
+                    </p>
+                </div>
+                
+                <div class="control-group">
+                    <label for="scanSpeed">
+                        <i class="fas fa-tachometer-alt"></i> Scan Speed:
+                    </label>
+                    <select id="scanSpeed">
+                        <option value="slow">Slow (Educational)</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="fast">Fast</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        <i class="fas fa-wallet"></i> Address Types:
+                    </label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="typeLegacy" checked>
+                        <label for="typeLegacy">Legacy (P2PKH)</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="typeSegWit" checked>
+                        <label for="typeSegWit">SegWit (P2SH-P2WPKH)</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="typeNativeSegWit" checked>
+                        <label for="typeNativeSegWit">Native SegWit (P2WPKH)</label>
+                    </div>
+                </div>
+                
+                <button id="startScan">
+                    <i class="fas fa-play"></i> Start Scan
+                </button>
+                <button id="stopScan" style="background: linear-gradient(90deg, #e74c3c, #c0392b); display: none;">
+                    <i class="fas fa-stop"></i> Stop Scan
+                </button>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Keys Scanned</div>
+                        <div class="stat-value" id="keysScanned">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Addresses Generated</div>
+                        <div class="stat-value" id="addressesGenerated">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Wallets Found</div>
+                        <div class="stat-value" id="walletsFound">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Speed</div>
+                        <div class="stat-value" id="scanRate">0/s</div>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <span>Scan Progress</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+                
+                <div class="warning">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Important Security Information</h3>
+                    <p>This tool runs entirely in your browser for educational purposes only. It does not:</p>
+                    <ul>
+                        <li>Connect to the Bitcoin network or any external services</li>
+                        <li>Access real blockchain data or real Bitcoin balances</li>
+                        <li>Transmit any private keys or sensitive data</li>
+                    </ul>
+                    <p><strong>Never enter real private keys into any website.</strong> Use hardware wallets and secure offline storage for your cryptocurrency keys.</p>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 class="panel-title">
+                    <i class="fas fa-search"></i> Scan Results
+                </h2>
+                
+                <div class="controls">
+                    <button id="exportBtn" class="export-btn">
+                        <i class="fas fa-download"></i> Export Results
+                    </button>
+                    <button id="clearBtn" class="clear-btn">
+                        <i class="fas fa-trash"></i> Clear Results
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Private Key (Hex)</th>
+                                <th>Address</th>
+                                <th>Type</th>
+                                <th>Balance (BTC)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 30px;">
+                                    <i class="fas fa-info-circle"></i> Start the scan to see addresses with simulated balances
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Bitcoin Private Key Scanner - Educational Demonstration Only | Simulated 1% Balance Addresses</p>
+            <p>This tool demonstrates how Bitcoin scanning works without connecting to the internet</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const startBtn = document.getElementById('startScan');
+            const stopBtn = document.getElementById('stopScan');
+            const exportBtn = document.getElementById('exportBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const resultsBody = document.getElementById('resultsBody');
+            const keysScannedEl = document.getElementById('keysScanned');
+            const addressesGeneratedEl = document.getElementById('addressesGenerated');
+            const walletsFoundEl = document.getElementById('walletsFound');
+            const scanRateEl = document.getElementById('scanRate');
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            
+            // State variables
+            let isScanning = false;
+            let scanInterval;
+            let keysScanned = 0;
+            let addressesGenerated = 0;
+            let walletsFound = 0;
+            let lastUpdate = Date.now();
+            let scannedSinceLast = 0;
+            let foundWallets = [];
+            let counter = 1;
+            
+            // Start scanning
+            startBtn.addEventListener('click', startScanning);
+            stopBtn.addEventListener('click', stopScanning);
+            exportBtn.addEventListener('click', exportResults);
+            clearBtn.addEventListener('click', clearResults);
+            
+            function startScanning() {
+                if (isScanning) return;
+                
+                // Reset state
+                isScanning = true;
+                keysScanned = 0;
+                addressesGenerated = 0;
+                walletsFound = 0;
+                scannedSinceLast = 0;
+                lastUpdate = Date.now();
+                counter = 1;
+                foundWallets = [];
+                updateStats();
+                
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'block';
+                
+                resultsBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 30px;">
+                            <i class="fas fa-sync-alt fa-spin"></i> Scanning in progress...
+                        </td>
+                    </tr>
+                `;
+                
+                const keyCount = parseInt(document.getElementById('keyCount').value) || 500;
+                const speed = document.getElementById('scanSpeed').value;
+                
+                let intervalTime;
+                switch(speed) {
+                    case 'slow': intervalTime = 300; break;
+                    case 'medium': intervalTime = 50; break;
+                    case 'fast': intervalTime = 10; break;
+                    default: intervalTime = 50;
+                }
+                
+                let keysProcessed = 0;
+                
+                scanInterval = setInterval(() => {
+                    if (keysProcessed >= keyCount) {
+                        stopScanning();
+                        return;
+                    }
+                    
+                    // Generate a random private key
+                    const privateKey = generatePrivateKey();
+                    const addresses = generateAddresses(privateKey);
+                    
+                    // Simulate checking balances (1% chance of having balance)
+                    addresses.forEach(address => {
+                        const hasBalance = Math.random() < 0.01;
+                        
+                        if (hasBalance) {
+                            const balance = (Math.random() * 10).toFixed(8);
+                            walletsFound++;
+                            
+                            // Add to found wallets array
+                            foundWallets.push({
+                                id: counter,
+                                privateKey: privateKey,
+                                address: address.addr,
+                                type: address.type,
+                                balance: balance
+                            });
+                            
+                            // Add to table
+                            resultsBody.innerHTML = `
+                                <tr class="found-row">
+                                    <td>${counter}</td>
+                                    <td class="private-key">${privateKey}</td>
+                                    <td class="address">${address.addr}</td>
+                                    <td class="type-cell">${address.type}</td>
+                                    <td class="balance-cell">${balance} BTC</td>
+                                </tr>
+                            ` + resultsBody.innerHTML;
+                            
+                            counter++;
+                        }
+                    });
+                    
+                    keysProcessed++;
+                    keysScanned++;
+                    addressesGenerated += addresses.length;
+                    scannedSinceLast++;
+                    
+                    // Update stats every 500ms
+                    if (Date.now() - lastUpdate > 500) {
+                        updateStats();
+                        lastUpdate = Date.now();
+                        scannedSinceLast = 0;
+                    }
+                    
+                    // Update progress
+                    const progress = (keysProcessed / keyCount) * 100;
+                    progressFill.style.width = `${progress}%`;
+                    progressPercent.textContent = `${Math.round(progress)}%`;
+                    
+                }, intervalTime);
+            }
+            
+            function stopScanning() {
+                isScanning = false;
+                clearInterval(scanInterval);
+                
+                startBtn.style.display = 'block';
+                stopBtn.style.display = 'none';
+                
+                if (foundWallets.length === 0) {
+                    resultsBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 30px;">
+                                <i class="fas fa-info-circle"></i> No wallets with balances found in this scan
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                updateStats();
+            }
+            
+            function generatePrivateKey() {
+                // Generate a random hex private key
+                const rnd = window.crypto.getRandomValues(new Uint8Array(32));
+                return Array.from(rnd, byte => byte.toString(16).padStart(2, '0')).join('');
+            }
+            
+            function generateAddresses(privateKey) {
+                const addresses = [];
+                
+                try {
+                    // Convert hex to buffer
+                    const buffer = Buffer.from(privateKey, 'hex');
+                    const keyPair = bitcoin.ECPair.fromPrivateKey(buffer);
+                    
+                    // Legacy (P2PKH)
+                    if (document.getElementById('typeLegacy').checked) {
+                        const { address } = bitcoin.payments.p2pkh({ 
+                            pubkey: keyPair.publicKey,
+                            network: bitcoin.networks.bitcoin
+                        });
+                        addresses.push({ type: 'Legacy (P2PKH)', addr: address });
+                    }
+                    
+                    // SegWit (P2SH-P2WPKH)
+                    if (document.getElementById('typeSegWit').checked) {
+                        const { address } = bitcoin.payments.p2sh({
+                            redeem: bitcoin.payments.p2wpkh({
+                                pubkey: keyPair.publicKey,
+                                network: bitcoin.networks.bitcoin
+                            }),
+                            network: bitcoin.networks.bitcoin
+                        });
+                        addresses.push({ type: 'SegWit (P2SH-P2WPKH)', addr: address });
+                    }
+                    
+                    // Native SegWit (P2WPKH)
+                    if (document.getElementById('typeNativeSegWit').checked) {
+                        const { address } = bitcoin.payments.p2wpkh({ 
+                            pubkey: keyPair.publicKey,
+                            network: bitcoin.networks.bitcoin
+                        });
+                        addresses.push({ type: 'Native SegWit (P2WPKH)', addr: address });
+                    }
+                    
+                } catch (e) {
+                    console.error('Error generating addresses:', e);
+                }
+                
+                return addresses;
+            }
+            
+            function updateStats() {
+                keysScannedEl.textContent = keysScanned;
+                addressesGeneratedEl.textContent = addressesGenerated;
+                walletsFoundEl.textContent = walletsFound;
+                
+                // Calculate keys per second
+                const elapsed = (Date.now() - lastUpdate) / 1000;
+                const rate = elapsed > 0 ? (scannedSinceLast / elapsed).toFixed(1) : 0;
+                scanRateEl.textContent = `${rate}/s`;
+            }
+            
+            function exportResults() {
+                if (foundWallets.length === 0) {
+                    alert('No results to export');
+                    return;
+                }
+                
+                let csvContent = "ID,Private Key,Address,Type,Balance (BTC)\n";
+                
+                foundWallets.forEach(wallet => {
+                    csvContent += `${wallet.id},${wallet.privateKey},${wallet.address},${wallet.type},${wallet.balance}\n`;
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", "bitcoin_wallets.csv");
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            function clearResults() {
+                if (isScanning) {
+                    alert('Please stop the scan before clearing results');
+                    return;
+                }
+                
+                foundWallets = [];
+                resultsBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 30px;">
+                            <i class="fas fa-info-circle"></i> Results cleared. Start a new scan to see addresses with simulated balances
+                        </td>
+                    </tr>
+                `;
+                walletsFound = 0;
+                walletsFoundEl.textContent = '0';
+            }
+        });
+    </script>
+</body>
+</html>
